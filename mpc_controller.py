@@ -109,7 +109,7 @@ if __name__ == "__main__":
     l_truck = 5.4
     l_trailer = 10.8
 
-    reference_state = np.tile(np.array([[0.0], [5.0], [20.0], [0.0], [0.0]]), (1, N + 1)) # this is the refrence traj we want, straight line 20 m/s, 0 lateral position, 0 heading angle, 0 trailer angle
+    reference_state = np.tile(np.array([[0.0], [5.5], [20.0], [0.0], [0.0]]), (1, N + 1)) # this is the refrence traj we want, straight line 20 m/s, 0 lateral position, 0 heading angle, 0 trailer angle
     # np.tile repeats the array for N steps, so the refrence traj is the same for all N steps
 
     # create MPC controller
@@ -117,11 +117,12 @@ if __name__ == "__main__":
 
     # store traj
     traj = [state.copy()]
+    controls = []
 
-    for i in range(20):
+    for i in range(40):
         control_input = mpc.solve(state, reference_state)
+        controls.append(control_input.copy())
         state = r4k_step(state, control_input, dt, l_truck, l_trailer)
-        
         traj.append(state.copy())
 
         print(f"Step {i}: Control Input: {control_input}, State: {state}")
@@ -152,5 +153,27 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.axis('equal')
     plt.legend()
+
+    controls = np.array(controls)
+    state_time = np.arange(len(traj)) * dt
+    control_time = np.arange(len(controls)) * dt
+
+    fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+
+    axes[0].plot(state_time, traj[:, 2])
+    axes[0].set_ylabel('Speed (m/s)')
+    axes[0].grid(True)
+
+    axes[1].plot(control_time, controls[:, 0])
+    axes[1].set_ylabel('Steering (rad)')
+    axes[1].grid(True)
+
+    axes[2].plot(control_time, controls[:, 1])
+    axes[2].set_ylabel('Acceleration (m/s^2)')
+    axes[2].set_xlabel('Time (s)')
+    axes[2].grid(True)
+
+    fig.suptitle('MPC Inputs and Speed')
+    fig.tight_layout()
 
     plt.show()

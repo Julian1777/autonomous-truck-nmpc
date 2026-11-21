@@ -1,7 +1,7 @@
 # MPC controller simulates the next N steps at every single timestep. Based on the results it picks the best steering and acceleration plan.
 
 import casadi as ca
-from dynamics import r4k_step
+from src.dynamics import r4k_step
 import numpy as np
 import matplotlib.pyplot as plt
 
